@@ -15,80 +15,100 @@
     <!-- Header -->
     <div style="max-width: 900px; margin: 0 auto 20px auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <h2 style="font-family: 'Outfit', sans-serif; margin: 0;"><i class="fa-solid fa-pen-to-square"></i> Quản Trị Bài Viết</h2>
-        <div style="display:flex; gap:12px;">
+        <div style="display:flex; gap:12px; align-items:center;">
+            <span id="user-email" style="color: var(--text-muted); font-size: 14px;"></span>
             <a href="blog.html" class="read-more"><i class="fa-solid fa-list"></i> Xem blog</a>
             <a href="index.html" class="read-more"><i class="fa-solid fa-arrow-left"></i> Trang chủ</a>
+            <button id="logout-btn" class="btn btn-outline" style="padding: 8px 14px; display: none;"><i class="fa-solid fa-right-from-bracket"></i> Đăng xuất</button>
         </div>
     </div>
 
-    <div class="contact-box" style="max-width: 900px; margin: 0 auto; text-align: left;">
-        <div id="editing-banner" class="editing-banner"><i class="fa-solid fa-pen"></i> Đang chỉnh sửa bài viết. Nhấn "Hủy chỉnh sửa" để quay lại chế độ đăng mới.</div>
-
-        <form id="post-form">
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Tiêu đề bài viết:</label>
-                <input type="text" id="title" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;">
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Danh mục:</label>
-                <select id="category" style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;">
-                    <option value="Tin tức">Tin tức</option>
-                    <option value="Công nghệ">Công nghệ</option>
-                    <option value="Lập trình">Lập trình</option>
-                    <option value="Marketing">Marketing</option>
-                    <option value="Khác">Khác</option>
-                </select>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
-                    <input type="checkbox" id="featured" style="width: 18px; height: 18px;">
-                    Bài viết nổi bật (hiển thị ưu tiên)
-                </label>
-            </div>
-
-            <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Nội dung bài viết:</label>
-                <textarea id="content" rows="8" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;"></textarea>
-            </div>
-
-            <div style="margin-bottom: 30px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Chọn hình ảnh minh họa (để trống nếu giữ ảnh hiện tại):</label>
-                <input type="file" id="image-file" accept="image/*" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
-            </div>
-
-            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                <button type="submit" id="submit-btn" class="btn btn-primary" style="flex: 1; min-width: 160px; justify-content: center;">Đăng Bài Viết</button>
-                <button type="button" id="cancel-edit-btn" class="btn btn-outline" style="display: none; justify-content: center;">Hủy chỉnh sửa</button>
-            </div>
-        </form>
-
-        <div id="status-msg" style="margin-top: 20px; text-align: center; font-weight: 600;"></div>
+    <!-- LOGIN GATE -->
+    <div id="login-box" class="contact-box" style="max-width: 420px; margin: 40px auto; text-align: left; display: none;">
+        <h3 style="font-family: 'Outfit', sans-serif; text-align: center; margin-bottom: 20px;"><i class="fa-solid fa-lock"></i> Đăng nhập quản trị</h3>
+        <div style="margin-bottom: 16px;">
+            <label style="display:block; margin-bottom:6px; font-weight:500;">Email:</label>
+            <input type="email" id="login-email" required style="width:100%; padding:12px; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px; color:white; font-size:16px;">
+        </div>
+        <div style="margin-bottom: 20px;">
+            <label style="display:block; margin-bottom:6px; font-weight:500;">Mật khẩu:</label>
+            <input type="password" id="login-password" required style="width:100%; padding:12px; background:var(--bg-primary); border:1px solid var(--border-color); border-radius:8px; color:white; font-size:16px;">
+        </div>
+        <button id="login-btn" class="btn btn-primary" style="width:100%; justify-content:center;">Đăng nhập</button>
+        <div id="login-msg" style="margin-top:16px; text-align:center; font-weight:600; font-size:14px;"></div>
     </div>
 
-    <!-- Danh sach bai viet -->
-    <div class="contact-box" style="max-width: 900px; margin: 30px auto 0 auto; text-align: left;">
-        <h3 style="font-family: 'Outfit', sans-serif; margin-bottom: 16px;"><i class="fa-solid fa-list"></i> Danh sách bài viết đã đăng</h3>
-        <div class="admin-toolbar">
-            <button id="refresh-btn" class="btn btn-outline" style="padding: 8px 16px;"><i class="fa-solid fa-rotate"></i> Làm mới</button>
-            <span id="count-info" style="color: var(--text-muted); font-size: 14px;"></span>
+    <!-- ADMIN CONTENT (hidden until logged in) -->
+    <div id="admin-content" style="display: none;">
+        <div class="contact-box" style="max-width: 900px; margin: 0 auto; text-align: left;">
+            <div id="editing-banner" class="editing-banner"><i class="fa-solid fa-pen"></i> Đang chỉnh sửa bài viết. Nhấn "Hủy chỉnh sửa" để quay lại chế độ đăng mới.</div>
+
+            <form id="post-form">
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Tiêu đề bài viết:</label>
+                    <input type="text" id="title" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;">
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Danh mục:</label>
+                    <select id="category" style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;">
+                        <option value="Tin tức">Tin tức</option>
+                        <option value="Công nghệ">Công nghệ</option>
+                        <option value="Lập trình">Lập trình</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Khác">Khác</option>
+                    </select>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+                        <input type="checkbox" id="featured" style="width: 18px; height: 18px;">
+                        Bài viết nổi bật (hiển thị ưu tiên)
+                    </label>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Nội dung bài viết:</label>
+                    <textarea id="content" rows="8" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;"></textarea>
+                </div>
+
+                <div style="margin-bottom: 30px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Chọn hình ảnh minh họa (để trống nếu giữ ảnh hiện tại):</label>
+                    <input type="file" id="image-file" accept="image/*" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
+                </div>
+
+                <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                    <button type="submit" id="submit-btn" class="btn btn-primary" style="flex: 1; min-width: 160px; justify-content: center;">Đăng Bài Viết</button>
+                    <button type="button" id="cancel-edit-btn" class="btn btn-outline" style="display: none; justify-content: center;">Hủy chỉnh sửa</button>
+                </div>
+            </form>
+
+            <div id="status-msg" style="margin-top: 20px; text-align: center; font-weight: 600;"></div>
         </div>
-        <div class="admin-table-wrap">
-            <table class="admin-posts">
-                <thead>
-                    <tr>
-                        <th style="width: 70px;">Ảnh</th>
-                        <th>Tiêu đề</th>
-                        <th style="width: 110px;">Danh mục</th>
-                        <th style="width: 110px;">Ngày</th>
-                        <th style="width: 150px;">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-list">
-                    <tr><td colspan="5" class="empty-state">Đang tải...</td></tr>
-                </tbody>
-            </table>
+
+        <!-- Danh sach bai viet -->
+        <div class="contact-box" style="max-width: 900px; margin: 30px auto 0 auto; text-align: left;">
+            <h3 style="font-family: 'Outfit', sans-serif; margin-bottom: 16px;"><i class="fa-solid fa-list"></i> Danh sách bài viết đã đăng</h3>
+            <div class="admin-toolbar">
+                <button id="refresh-btn" class="btn btn-outline" style="padding: 8px 16px;"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+                <span id="count-info" style="color: var(--text-muted); font-size: 14px;"></span>
+            </div>
+            <div class="admin-table-wrap">
+                <table class="admin-posts">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Ảnh</th>
+                            <th>Tiêu đề</th>
+                            <th style="width: 110px;">Danh mục</th>
+                            <th style="width: 110px;">Ngày</th>
+                            <th style="width: 150px;">Hành động</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-list">
+                        <tr><td colspan="5" class="empty-state">Đang tải...</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 
@@ -98,6 +118,14 @@
         const SUPABASE_ANON_KEY = 'sb_publishable_I_2xFfFn-f8Pus83niNXwY_OZ1t87YA';
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const loginBox = document.getElementById('login-box');
+        const adminContent = document.getElementById('admin-content');
+        const userEmailEl = document.getElementById('user-email');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const loginBtn = document.getElementById('login-btn');
+        const loginMsg = document.getElementById('login-msg');
 
         const form = document.getElementById('post-form');
         const statusMsg = document.getElementById('status-msg');
@@ -113,6 +141,64 @@
         function escapeHtml(s) {
             return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
         }
+
+        async function checkSession() {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session && session.user) {
+                showAdmin(session.user);
+            } else {
+                showLogin();
+            }
+        }
+
+        function showLogin() {
+            loginBox.style.display = 'block';
+            adminContent.style.display = 'none';
+            logoutBtn.style.display = 'none';
+            userEmailEl.textContent = '';
+        }
+
+        function showAdmin(user) {
+            loginBox.style.display = 'none';
+            adminContent.style.display = 'block';
+            logoutBtn.style.display = 'inline-flex';
+            userEmailEl.textContent = user.email || '';
+            loadAdminPosts();
+        }
+
+        loginBtn.addEventListener('click', async () => {
+            loginBtn.disabled = true;
+            loginMsg.style.color = 'var(--accent-blue)';
+            loginMsg.textContent = 'Đang đăng nhập...';
+            const email = document.getElementById('login-email').value.trim();
+            const password = document.getElementById('login-password').value;
+            try {
+                const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+                if (error) throw error;
+                loginMsg.style.color = '#34d399';
+                loginMsg.textContent = 'Đăng nhập thành công!';
+                showAdmin(data.user);
+            } catch (err) {
+                console.error(err);
+                loginMsg.style.color = '#ef4444';
+                loginMsg.textContent = '❌ ' + (err.message || 'Đăng nhập thất bại');
+            } finally {
+                loginBtn.disabled = false;
+            }
+        });
+
+        logoutBtn.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            showLogin();
+        });
+
+        supabaseClient.auth.onAuthStateChange((_event, session) => {
+            if (session && session.user) {
+                showAdmin(session.user);
+            } else {
+                showLogin();
+            }
+        });
 
         async function loadAdminPosts() {
             adminList.innerHTML = '<tr><td colspan="5" class="empty-state">Đang tải...</td></tr>';
@@ -157,7 +243,7 @@
                 });
             } catch (err) {
                 console.error(err);
-                adminList.innerHTML = '<tr><td colspan="5" class="empty-state" style="color:#ef4444;">Lỗi tải danh sách.</td></tr>';
+                adminList.innerHTML = '<tr><td colspan="5" class="empty-state" style="color:#ef4444;">Lỗi tải danh sách. (Bạn đã đăng nhập chưa?)</td></tr>';
             }
         }
 
@@ -266,7 +352,7 @@
 
         document.getElementById('refresh-btn').addEventListener('click', loadAdminPosts);
 
-        loadAdminPosts();
+        checkSession();
     </script>
 </body>
 </html>
