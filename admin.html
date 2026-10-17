@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Bài Viết Mới - Admin Panel</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Thư viện Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body style="background-color: var(--bg-primary); padding: 40px 8%;">
+
+    <div class="contact-box" style="max-width: 600px; margin: 0 auto; text-align: left;">
+        <h2 style="text-align: center; margin-bottom: 30px;"><i class="fa-solid fa-pen-to-square"></i> Quản Trị Viết Bài</h2>
+        
+        <form id="post-form">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Tiêu đề bài viết:</label>
+                <input type="text" id="title" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;">
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Nội dung bài viết:</label>
+                <textarea id="content" rows="6" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;"></textarea>
+            </div>
+
+            <div style="margin-bottom: 30px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Chọn hình ảnh minh họa:</label>
+                <input type="file" id="image-file" accept="image/*" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
+            </div>
+
+            <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%; justify-content: center;">Đăng Bài Viết</button>
+        </form>
+
+        <div id="status-msg" style="margin-top: 20px; text-align: center; font-weight: 600;"></div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="index.html" class="read-more"><i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ</a>
+        </div>
+    </div>
+
+    <!-- Script kết nối Supabase và xử lý đăng bài -->
+    <script>
+        // ⚠️ THAY THẾ 2 DÒNG DƯỚI ĐÂY BẰNG THÔNG TIN TRONG SUPABASE PROJECT CỦA BẠN
+        const SUPABASE_URL = 'https://oifrqjuzkppubvjchwsu.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_I_2xFfFn-f8Pus83niNXwA_OZ1t87YA';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const form = document.getElementById('post-form');
+        const statusMsg = document.getElementById('status-msg');
+        const submitBtn = document.getElementById('submit-btn');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            submitBtn.disabled = true;
+            statusMsg.style.color = 'var(--accent-blue)';
+            statusMsg.textContent = 'Đang tải ảnh và đăng bài lên Database...';
+
+            const title = document.getElementById('title').value;
+            const content = document.getElementById('content').value;
+            const imageFile = document.getElementById('image-file').files[0];
+
+            let imageUrl = '';
+
+            try {
+                // 1. Nếu có chọn ảnh thì upload lên Supabase Storage bucket tên là 'images'
+                if (imageFile) {
+                    const fileName = `${Date.now()}_${imageFile.name}`;
+                    const { data: uploadData, error: uploadError } = await supabaseClient.storage
+                        .from('images')
+                        .upload(fileName, imageFile);
+
+                    if (uploadError) throw uploadError;
+
+                    // Lấy Public URL của ảnh vừa upload
+                    const { data: publicURLData } = supabaseClient.storage
+                        .from('images')
+                        .getPublicUrl(fileName);
+
+                    imageUrl = publicURLData.publicUrl;
+                }
+
+                // 2. Lưu thông tin bài viết vào bảng 'posts'
+                const { data, error } = await supabaseClient
+                    .from('posts')
+                    .insert([{ title, content, image_url: imageUrl }]);
+
+                if (error) throw error;
+
+                statusMsg.style.color = '#34d399';
+                statusMsg.textContent = '🎉 Đăng bài viết thành công!';
+                form.reset();
+            } catch (err) {
+                console.error(err);
+                statusMsg.style.color = '#ef4444';
+                statusMsg.textContent = '❌ Lỗi: ' + err.message;
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

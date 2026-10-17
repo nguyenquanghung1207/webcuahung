@@ -10,6 +10,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Thư viện Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -23,6 +25,7 @@
             <a href="#skills">Kỹ năng</a>
             <a href="#projects">Dự án</a>
             <a href="#blog">Bài viết</a>
+            <a href="admin.html" class="btn-nav" style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--border-color); color: var(--accent-blue) !important;"><i class="fa-solid fa-pen"></i> Quản trị</a>
             <a href="#contact" class="btn-nav">Liên hệ</a>
         </nav>
         <div class="menu-toggle" id="mobile-menu">
@@ -30,7 +33,7 @@
         </div>
     </header>
 
-    <!-- Hero Section: Tone xanh công nghệ cực đỉnh -->
+    <!-- Hero Section -->
     <section class="hero">
         <div class="hero-glow"></div>
         <div class="hero-content">
@@ -169,35 +172,16 @@
         </div>
     </section>
 
-    <!-- Bài viết / Blog (Blog section) -->
+    <!-- Bài viết / Blog (Dynamic từ Supabase Database) -->
     <section id="blog" class="blog">
         <div class="section-title">
             <h2>Góc Chia Sẻ & Bài Viết</h2>
-            <p>Những suy nghĩ và kinh nghiệm trên con đường tự học lập trình</p>
+            <p>Những bài viết được cập nhật trực tiếp từ cơ sở dữ liệu</p>
         </div>
-        <div class="blog-grid">
-            <article class="blog-card">
-                <div class="blog-img">
-                    <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80" alt="Blog 1">
-                </div>
-                <div class="blog-content">
-                    <span class="blog-date"><i class="fa-regular fa-calendar"></i> 17 Tháng 10, 2026</span>
-                    <h3>Hành trình từ số 0 đến khi tự tạo ra trang web đầu tiên</h3>
-                    <p>Chia sẻ những khó khăn, bỡ ngỡ và bí quyết giúp một người chưa biết gì về code có thể tự tay xây dựng một website hoàn chỉnh.</p>
-                    <a href="#contact" class="read-more">Đọc tiếp <i class="fa-solid fa-arrow-right"></i></a>
-                </div>
-            </article>
-            <article class="blog-card">
-                <div class="blog-img">
-                    <img src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80" alt="Blog 2">
-                </div>
-                <div class="blog-content">
-                    <span class="blog-date"><i class="fa-regular fa-calendar"></i> 15 Tháng 10, 2026</span>
-                    <h3>Tại sao CSS Flexbox và Grid lại thay đổi cách thiết kế web?</h3>
-                    <p>Khám phá sức mạnh của các công cụ căn chỉnh bố cục hiện đại giúp việc làm web trở nên dễ dàng và thú vị hơn bao giờ hết.</p>
-                    <a href="#contact" class="read-more">Đọc tiếp <i class="fa-solid fa-arrow-right"></i></a>
-                </div>
-            </article>
+        
+        <!-- Nơi hiển thị bài viết động -->
+        <div class="blog-grid" id="dynamic-blog-container">
+            <p style="color: var(--text-muted); text-align: grid-column: 1 / -1;">Đang tải bài viết từ Database...</p>
         </div>
     </section>
 
@@ -223,5 +207,59 @@
         <p>&copy; 2026 Hùng. All rights reserved. Designed with <i class="fa-solid fa-heart" style="color: #38bdf8;"></i> & Tech Blue Theme.</p>
     </footer>
 
+    <!-- Script tải bài viết từ Supabase ra trang chủ -->
+    <script>
+        // ⚠️ THAY THẾ 2 DÒNG DƯỚI ĐÂY BẰNG THÔNG TIN TRONG SUPABASE PROJECT CỦA BẠN
+        const SUPABASE_URL = 'https://oifrqjuzkppubvjchwsu.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_I_2xFfFn-f8Pus83niNXwY_OZ1t87YA';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function fetchPosts() {
+            const container = document.getElementById('dynamic-blog-container');
+            
+            try {
+                const { data: posts, error } = await supabaseClient
+                    .from('posts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                if (!posts || posts.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-muted); grid-column: 1 / -1; text-align: center;">Chưa có bài viết nào. Hãy vào trang Quản trị để đăng bài viết đầu tiên!</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                posts.forEach(post => {
+                    const dateFormatted = new Date(post.created_at).toLocaleDateString('vi-VN');
+                    const imgTag = post.image_url ? `<img src="${post.image_url}" alt="${post.title}">` : `<img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=600&q=80" alt="Default">`;
+                    
+                    const card = `
+                        <article class="blog-card">
+                            <div class="blog-img">
+                                ${imgTag}
+                            </div>
+                            <div class="blog-content">
+                                <span class="blog-date"><i class="fa-regular fa-calendar"></i> ${dateFormatted}</span>
+                                <h3>${post.title}</h3>
+                                <p>${post.content.substring(0, 100)}...</p>
+                                <a href="#contact" class="read-more">Xem chi tiết <i class="fa-solid fa-arrow-right"></i></a>
+                            </div>
+                        </article>
+                    `;
+                    container.innerHTML += card;
+                });
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<p style="color: #ef4444; grid-column: 1 / -1; text-align: center;">Lỗi tải bài viết từ Database.</p>';
+            }
+        }
+
+        // Gọi hàm tải bài viết khi trang được mở
+        fetchPosts();
+    </script>
 </body>
 </html>
