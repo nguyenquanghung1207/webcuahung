@@ -1,0 +1,9 @@
+{
+  "name": "web-ca-nhan",
+  "version": "1.0.0",
+  "description": "Trang web cá nhân của Hùng",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {}
+}
