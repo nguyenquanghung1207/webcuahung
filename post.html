@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="page-title">Bài viết - Hùng.dev</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="blog.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <!-- Header & Navbar -->
+    <header class="navbar">
+        <div class="logo">
+            <i class="fa-solid fa-code"></i> Hùng<span>.dev</span>
+        </div>
+        <nav class="nav-links">
+            <a href="index.html">Trang chủ</a>
+            <a href="blog.html">Bài viết</a>
+            <a href="admin.html" class="btn-nav" style="background: rgba(56, 189, 248, 0.1); border: 1px solid var(--border-color); color: var(--accent-blue) !important;"><i class="fa-solid fa-pen"></i> Quản trị</a>
+            <a href="index.html#contact" class="btn-nav">Liên hệ</a>
+        </nav>
+        <div class="menu-toggle" id="mobile-menu">
+            <i class="fa-solid fa-bars"></i>
+        </div>
+    </header>
+
+    <!-- Post Detail -->
+    <section class="blog" style="padding-top: 60px;">
+        <a href="blog.html" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Quay lại danh sách</a>
+        <div id="post-container">
+            <p style="text-align:center;color:var(--text-muted);">Đang tải bài viết...</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 Hùng. All rights reserved. Designed with <i class="fa-solid fa-heart" style="color: #38bdf8;"></i> & Tech Blue Theme.</p>
+    </footer>
+
+    <script>
+        const SUPABASE_URL = 'https://oifrqjuzkppubvjchwsu.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_I_2xFfFn-f8Pus83niNXwY_OZ1t87YA';
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const params = new URLSearchParams(location.search);
+        const id = params.get('id');
+        const container = document.getElementById('post-container');
+        const titleEl = document.getElementById('page-title');
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
+        }
+        function nl2br(s) { return s.replace(/\n/g, '<br>'); }
+
+        async function loadPost() {
+            if (!id) {
+                container.innerHTML = '<p style="text-align:center;color:var(--text-muted);">Không tìm thấy bài viết.</p>';
+                return;
+            }
+            try {
+                const { data, error } = await supabaseClient
+                    .from('posts')
+                    .select('*')
+                    .eq('id', id)
+                    .single();
+                if (error || !data) {
+                    container.innerHTML = '<p style="text-align:center;color:#ef4444;">Không tìm thấy bài viết.</p>';
+                    return;
+                }
+                titleEl.textContent = data.title + ' - Hùng.dev';
+                const dateFormatted = new Date(data.created_at).toLocaleDateString('vi-VN');
+                const catBadge = data.category ? `<span class="category-badge">${escapeHtml(data.category)}</span>` : '';
+                const featuredTag = data.is_featured ? '<span class="featured-tag">NỔI BẬT</span>' : '';
+                const imgHtml = data.image_url
+                    ? `<div class="post-image"><img src="${data.image_url}" alt="${escapeHtml(data.title)}"></div>`
+                    : '';
+                const body = nl2br(escapeHtml(data.content || ''));
+                container.innerHTML = `
+                    <div class="post-header">
+                        ${featuredTag}${catBadge}
+                        <h1>${escapeHtml(data.title)}</h1>
+                        <div class="post-meta">
+                            <span><i class="fa-regular fa-calendar"></i> ${dateFormatted}</span>
+                            ${data.category ? `<span><i class="fa-solid fa-tag"></i> ${escapeHtml(data.category)}</span>` : ''}
+                        </div>
+                    </div>
+                    ${imgHtml}
+                    <div class="post-content">${body}</div>
+                `;
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<p style="text-align:center;color:#ef4444;">Lỗi tải bài viết.</p>';
+            }
+        }
+
+        loadPost();
+    </script>
+</body>
+</html>

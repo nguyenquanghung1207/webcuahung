@@ -3,18 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng Bài Viết Mới - Admin Panel</title>
+    <title>Quản trị bài viết - Hùng.dev</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="blog.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Thư viện Supabase JS Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body style="background-color: var(--bg-primary); padding: 40px 8%;">
 
-    <div class="contact-box" style="max-width: 600px; margin: 0 auto; text-align: left;">
-        <h2 style="text-align: center; margin-bottom: 30px;"><i class="fa-solid fa-pen-to-square"></i> Quản Trị Viết Bài</h2>
-        
+    <!-- Header -->
+    <div style="max-width: 900px; margin: 0 auto 20px auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <h2 style="font-family: 'Outfit', sans-serif; margin: 0;"><i class="fa-solid fa-pen-to-square"></i> Quản Trị Bài Viết</h2>
+        <div style="display:flex; gap:12px;">
+            <a href="blog.html" class="read-more"><i class="fa-solid fa-list"></i> Xem blog</a>
+            <a href="index.html" class="read-more"><i class="fa-solid fa-arrow-left"></i> Trang chủ</a>
+        </div>
+    </div>
+
+    <div class="contact-box" style="max-width: 900px; margin: 0 auto; text-align: left;">
+        <div id="editing-banner" class="editing-banner"><i class="fa-solid fa-pen"></i> Đang chỉnh sửa bài viết. Nhấn "Hủy chỉnh sửa" để quay lại chế độ đăng mới.</div>
+
         <form id="post-form">
             <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 500;">Tiêu đề bài viết:</label>
@@ -22,77 +31,230 @@
             </div>
 
             <div style="margin-bottom: 20px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Danh mục:</label>
+                <select id="category" style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;">
+                    <option value="Tin tức">Tin tức</option>
+                    <option value="Công nghệ">Công nghệ</option>
+                    <option value="Lập trình">Lập trình</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Khác">Khác</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 500; cursor: pointer;">
+                    <input type="checkbox" id="featured" style="width: 18px; height: 18px;">
+                    Bài viết nổi bật (hiển thị ưu tiên)
+                </label>
+            </div>
+
+            <div style="margin-bottom: 20px;">
                 <label style="display: block; margin-bottom: 8px; font-weight: 500;">Nội dung bài viết:</label>
-                <textarea id="content" rows="6" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;"></textarea>
+                <textarea id="content" rows="8" required style="width: 100%; padding: 12px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white; font-size: 16px;"></textarea>
             </div>
 
             <div style="margin-bottom: 30px;">
-                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Chọn hình ảnh minh họa:</label>
+                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Chọn hình ảnh minh họa (để trống nếu giữ ảnh hiện tại):</label>
                 <input type="file" id="image-file" accept="image/*" style="width: 100%; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 8px; color: white;">
             </div>
 
-            <button type="submit" id="submit-btn" class="btn btn-primary" style="width: 100%; justify-content: center;">Đăng Bài Viết</button>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                <button type="submit" id="submit-btn" class="btn btn-primary" style="flex: 1; min-width: 160px; justify-content: center;">Đăng Bài Viết</button>
+                <button type="button" id="cancel-edit-btn" class="btn btn-outline" style="display: none; justify-content: center;">Hủy chỉnh sửa</button>
+            </div>
         </form>
 
         <div id="status-msg" style="margin-top: 20px; text-align: center; font-weight: 600;"></div>
-        
-        <div style="text-align: center; margin-top: 30px;">
-            <a href="index.html" class="read-more"><i class="fa-solid fa-arrow-left"></i> Quay lại trang chủ</a>
+    </div>
+
+    <!-- Danh sach bai viet -->
+    <div class="contact-box" style="max-width: 900px; margin: 30px auto 0 auto; text-align: left;">
+        <h3 style="font-family: 'Outfit', sans-serif; margin-bottom: 16px;"><i class="fa-solid fa-list"></i> Danh sách bài viết đã đăng</h3>
+        <div class="admin-toolbar">
+            <button id="refresh-btn" class="btn btn-outline" style="padding: 8px 16px;"><i class="fa-solid fa-rotate"></i> Làm mới</button>
+            <span id="count-info" style="color: var(--text-muted); font-size: 14px;"></span>
+        </div>
+        <div class="admin-table-wrap">
+            <table class="admin-posts">
+                <thead>
+                    <tr>
+                        <th style="width: 70px;">Ảnh</th>
+                        <th>Tiêu đề</th>
+                        <th style="width: 110px;">Danh mục</th>
+                        <th style="width: 110px;">Ngày</th>
+                        <th style="width: 150px;">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-list">
+                    <tr><td colspan="5" class="empty-state">Đang tải...</td></tr>
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <!-- Script kết nối Supabase và xử lý đăng bài -->
+    <!-- Script Supabase -->
     <script>
-        // ⚠️ THAY THẾ 2 DÒNG DƯỚI ĐÂY BẰNG THÔNG TIN TRONG SUPABASE PROJECT CỦA BẠN
         const SUPABASE_URL = 'https://oifrqjuzkppubvjchwsu.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_I_2xFfFn-f8Pus83niNXwA_OZ1t87YA';
+        const SUPABASE_ANON_KEY = 'sb_publishable_I_2xFfFn-f8Pus83niNXwY_OZ1t87YA';
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const form = document.getElementById('post-form');
         const statusMsg = document.getElementById('status-msg');
         const submitBtn = document.getElementById('submit-btn');
+        const cancelBtn = document.getElementById('cancel-edit-btn');
+        const banner = document.getElementById('editing-banner');
+        const adminList = document.getElementById('admin-list');
+        const countInfo = document.getElementById('count-info');
+
+        let editingId = null;
+        let editingImageUrl = '';
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"}[c]));
+        }
+
+        async function loadAdminPosts() {
+            adminList.innerHTML = '<tr><td colspan="5" class="empty-state">Đang tải...</td></tr>';
+            try {
+                const { data, error } = await supabaseClient
+                    .from('posts')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                if (!data || data.length === 0) {
+                    adminList.innerHTML = '<tr><td colspan="5" class="empty-state">Chưa có bài viết nào.</td></tr>';
+                    countInfo.textContent = '0 bài viết';
+                    return;
+                }
+                countInfo.textContent = data.length + ' bài viết';
+                adminList.innerHTML = '';
+                data.forEach(post => {
+                    const dateFormatted = new Date(post.created_at).toLocaleDateString('vi-VN');
+                    const thumb = post.image_url
+                        ? `<img src="${post.image_url}" alt="">`
+                        : `<img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=80&q=80" alt="">`;
+                    const featured = post.is_featured ? ' <span class="featured-tag">NB</span>' : '';
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="thumb-cell">${thumb}</td>
+                        <td>${escapeHtml(post.title)}${featured}</td>
+                        <td>${escapeHtml(post.category || 'Tin tức')}</td>
+                        <td>${dateFormatted}</td>
+                        <td>
+                            <button class="btn-action btn-edit" data-id="${post.id}">Sửa</button>
+                            <button class="btn-action btn-delete" data-id="${post.id}">Xóa</button>
+                        </td>
+                    `;
+                    adminList.appendChild(tr);
+                });
+
+                adminList.querySelectorAll('.btn-edit').forEach(btn => {
+                    btn.addEventListener('click', () => startEdit(btn.dataset.id));
+                });
+                adminList.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', () => deletePost(btn.dataset.id));
+                });
+            } catch (err) {
+                console.error(err);
+                adminList.innerHTML = '<tr><td colspan="5" class="empty-state" style="color:#ef4444;">Lỗi tải danh sách.</td></tr>';
+            }
+        }
+
+        async function startEdit(id) {
+            try {
+                const { data, error } = await supabaseClient.from('posts').select('*').eq('id', id).single();
+                if (error || !data) throw error;
+                editingId = id;
+                editingImageUrl = data.image_url || '';
+                document.getElementById('title').value = data.title || '';
+                document.getElementById('content').value = data.content || '';
+                document.getElementById('category').value = data.category || 'Tin tức';
+                document.getElementById('featured').checked = !!data.is_featured;
+                document.getElementById('image-file').value = '';
+                submitBtn.textContent = 'Cập nhật bài viết';
+                cancelBtn.style.display = 'inline-flex';
+                banner.style.display = 'block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            } catch (err) {
+                console.error(err);
+                statusMsg.style.color = '#ef4444';
+                statusMsg.textContent = 'Lỗi tải bài viết để sửa.';
+            }
+        }
+
+        function resetForm() {
+            editingId = null;
+            editingImageUrl = '';
+            form.reset();
+            submitBtn.textContent = 'Đăng Bài Viết';
+            cancelBtn.style.display = 'none';
+            banner.style.display = 'none';
+        }
+
+        cancelBtn.addEventListener('click', resetForm);
+
+        async function deletePost(id) {
+            if (!confirm('Bạn có chắc muốn xóa bài viết này?')) return;
+            try {
+                const { error } = await supabaseClient.from('posts').delete().eq('id', id);
+                if (error) throw error;
+                statusMsg.style.color = '#34d399';
+                statusMsg.textContent = 'Đã xóa bài viết.';
+                loadAdminPosts();
+            } catch (err) {
+                console.error(err);
+                statusMsg.style.color = '#ef4444';
+                statusMsg.textContent = 'Lỗi xóa: ' + err.message;
+            }
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             submitBtn.disabled = true;
             statusMsg.style.color = 'var(--accent-blue)';
-            statusMsg.textContent = 'Đang tải ảnh và đăng bài lên Database...';
+            statusMsg.textContent = editingId ? 'Đang cập nhật bài viết...' : 'Đang tải ảnh và đăng bài lên Database...';
 
             const title = document.getElementById('title').value;
             const content = document.getElementById('content').value;
+            const category = document.getElementById('category').value;
+            const isFeatured = document.getElementById('featured').checked;
             const imageFile = document.getElementById('image-file').files[0];
 
-            let imageUrl = '';
+            let imageUrl = editingImageUrl;
 
             try {
-                // 1. Nếu có chọn ảnh thì upload lên Supabase Storage bucket tên là 'images'
                 if (imageFile) {
                     const fileName = `${Date.now()}_${imageFile.name}`;
                     const { data: uploadData, error: uploadError } = await supabaseClient.storage
                         .from('images')
                         .upload(fileName, imageFile);
-
                     if (uploadError) throw uploadError;
-
-                    // Lấy Public URL của ảnh vừa upload
                     const { data: publicURLData } = supabaseClient.storage
                         .from('images')
                         .getPublicUrl(fileName);
-
                     imageUrl = publicURLData.publicUrl;
                 }
 
-                // 2. Lưu thông tin bài viết vào bảng 'posts'
-                const { data, error } = await supabaseClient
-                    .from('posts')
-                    .insert([{ title, content, image_url: imageUrl }]);
+                if (editingId) {
+                    const { error } = await supabaseClient
+                        .from('posts')
+                        .update({ title, content, image_url: imageUrl, category, is_featured: isFeatured })
+                        .eq('id', editingId);
+                    if (error) throw error;
+                    statusMsg.style.color = '#34d399';
+                    statusMsg.textContent = '🎉 Cập nhật bài viết thành công!';
+                } else {
+                    const { error } = await supabaseClient
+                        .from('posts')
+                        .insert([{ title, content, image_url: imageUrl, category, is_featured: isFeatured }]);
+                    if (error) throw error;
+                    statusMsg.style.color = '#34d399';
+                    statusMsg.textContent = '🎉 Đăng bài viết thành công!';
+                }
 
-                if (error) throw error;
-
-                statusMsg.style.color = '#34d399';
-                statusMsg.textContent = '🎉 Đăng bài viết thành công!';
-                form.reset();
+                resetForm();
+                loadAdminPosts();
             } catch (err) {
                 console.error(err);
                 statusMsg.style.color = '#ef4444';
@@ -101,6 +263,10 @@
                 submitBtn.disabled = false;
             }
         });
+
+        document.getElementById('refresh-btn').addEventListener('click', loadAdminPosts);
+
+        loadAdminPosts();
     </script>
 </body>
 </html>
